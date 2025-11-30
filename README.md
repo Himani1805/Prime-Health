@@ -65,7 +65,7 @@ Create a `.env` file in the backend root:
 
 ```env
 # SERVER CONFIG
-PORT=3000
+PORT=5000
 NODE_ENV=development
 
 # DATABASE (Global DB for Tenant/User lookup)
@@ -75,7 +75,7 @@ MONGO_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/hms_global?retryW
 JWT_SECRET=YOUR_SUPER_SECURE_SECRET_KEY
 JWT_EXPIRE=30d
 
-# EMAIL CONFIG (Nodemailer)
+# EMAIL CONFIG (Nodemailer - Use Gmail App Password or Mailtrap/SendGrid)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=465
 SMTP_EMAIL=your_email@gmail.com
