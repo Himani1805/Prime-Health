@@ -1,5 +1,6 @@
 const User = require('../models/user.model.js');
 const sendEmail = require('../utils/sendEmail');
+const { uploadToCloudinary } = require('../config/cloudinary.js');
 
 /**
  * @desc    Create a new User (Staff)
@@ -90,16 +91,16 @@ exports.createUser = async (req, res, next) => {
 exports.updateProfilePicture = async (req, res, next) => {
   try {
     // 1. Check if file was uploaded
-    // Multer places the file info in req.file
+    // Multer places the file info in req.file (in memory buffer)
     if (!req.file) {
       const error = new Error('Please upload a file');
       error.statusCode = 400;
       throw error;
     }
 
-    // 2. Get the Cloudinary URL
-    // req.file.path contains the secure HTTPS URL from Cloudinary
-    const imageUrl = req.file.path;
+    // 2. Upload to Cloudinary
+    const result = await uploadToCloudinary(req.file);
+    const imageUrl = result.secure_url;
 
     // 3. Update User Record in DB
     const user = await User.findByIdAndUpdate(

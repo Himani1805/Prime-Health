@@ -1,5 +1,4 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 const dotenv = require('dotenv');
 
@@ -12,17 +11,37 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// 2. Configure Storage Engine
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'hms-users', // The folder in Cloudinary Dashboard
-    allowed_formats: ['jpg', 'png', 'jpeg'], // Limit file types
-    transformation: [{ width: 500, height: 500, crop: 'limit' }], // Optional resizing
+// 2. Configure Storage Engine (using built-in Cloudinary storage)
+const storage = multer.memoryStorage();
+
+// 3. Create Multer Instance with custom uploader
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
+  fileFilter: function(req, file, cb) {
+    // Accept images only
+    if (!file.mimetype.match(/image\/(jpg|jpeg|png)$/)) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  }
 });
 
-// 3. Create Multer Instance
-const upload = multer({ storage: storage });
+// 4. Custom upload function to Cloudinary
+const uploadToCloudinary = async (file) => {
+  try {
+    const result = await cloudinary.uploader.upload(file.buffer, {
+      folder: 'hms-users',
+      format: file.mimetype.split('/')[1] || 'jpg',
+      public_id: file.originalname.split('.')[0] + '-' + Date.now(),
+      transformation: [{ width: 500, height: 500, crop: 'limit' }],
+    });
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
 
-module.exports = { upload };
+module.exports = { upload, uploadToCloudinary };
