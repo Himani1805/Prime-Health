@@ -69,9 +69,6 @@ exports.protect = async (req, res, next) => {
  */
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (req.user && req.user.role === 'SUPER_ADMIN') {
-        return next();
-    }
     if (!req.user || !roles.includes(req.user.role)) {
       const error = new Error(
         `User role '${req.user ? req.user.role : 'Unknown'}' is not authorized to access this route`

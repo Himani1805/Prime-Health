@@ -12,7 +12,7 @@ patientRouter.use(protect);
 // Allowed: Admin, Doctor, Receptionist, Nurse
 patientRouter.get(
   '/', 
-  authorize('HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'), 
+  authorize('SUPER_ADMIN','HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'), 
   getPatients
 );
 
@@ -20,7 +20,7 @@ patientRouter.get(
 // Allowed Roles: Hospital Admin, Receptionist, Doctor
 patientRouter.post(
   '/register',
-  authorize('HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR'),
+  authorize('SUPER_ADMIN','HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR'),
   registerPatient
 );
 

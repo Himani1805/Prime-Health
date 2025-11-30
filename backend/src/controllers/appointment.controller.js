@@ -118,7 +118,7 @@ exports.getAppointments = async (req, res, next) => {
     // Extract unique doctor IDs
     const doctorIds = Array.from(new Set(appointments.map(function(app) { 
         return app.doctor ? app.doctor.toString() : null; 
-    })).filter(Boolean));
+    })));
 
     if (doctorIds.length > 0) {
         // Fetch doctors from Global User Collection

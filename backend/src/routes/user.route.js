@@ -12,8 +12,8 @@ userRouter.use(protect);
 // POST /api/users - Create a new staff member
 // Only HOSPITAL_ADMIN (or SUPER_ADMIN) can create new users
 userRouter.post(
-  '/', 
-  authorize('HOSPITAL_ADMIN', 'SUPER_ADMIN'), 
+  '/',
+  authorize('HOSPITAL_ADMIN', 'SUPER_ADMIN'),
   createUser
 );
 
@@ -26,6 +26,6 @@ userRouter.put(
 );
 
 
-userRouter.get('/', protect, authorize('HOSPITAL_ADMIN', 'DOCTOR', 'RECEPTIONIST'), getUsers);
+userRouter.get('/', protect, authorize('SUPER_ADMIN', 'HOSPITAL_ADMIN', 'DOCTOR', 'RECEPTIONIST'), getUsers);
 
 module.exports = userRouter;

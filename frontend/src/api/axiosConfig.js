@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an Axios instance with default configuration
 const axiosInstance = axios.create({
-  baseURL:'https://prime-health.onrender.com/api',
+  baseURL: 'https://prime-health.onrender.com/api',
   // baseURL: 'http://localhost:3000/api', // Pointing to your Node.js backend
   headers: {
     'Content-Type': 'application/json',
@@ -14,12 +14,12 @@ axiosInstance.interceptors.request.use(
   (config) => {
     // Get token from localStorage
     const token = localStorage.getItem('token');
-    
+
     // If token exists, attach it to the Authorization header
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     return config;
   },
   (error) => {

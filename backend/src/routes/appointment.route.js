@@ -11,7 +11,7 @@ router.use(protect);
 // Allowed: Admin, Receptionist, Doctor
 router.post(
   '/book',
-  authorize('HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR'),
+  authorize('SUPER_ADMIN','HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR'),
   bookAppointment
 );
 
@@ -19,7 +19,7 @@ router.post(
 // List appointments with filters
 router.get(
   '/',
-  authorize('HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'),
+  authorize('SUPER_ADMIN','HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'),
   getAppointments
 );
 

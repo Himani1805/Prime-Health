@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosConfig';
 import DashboardChart from '../components/DashboardChart';
 import { toast } from 'react-toastify';
-import { 
-  Users, 
-  Activity, 
-  Calendar, 
-  FileText, 
+import {
+  Users,
+  Activity,
+  Calendar,
+  FileText,
   Loader2
 } from 'lucide-react';
 import RecentActivity from '../components/RecentActivity';
@@ -24,18 +24,20 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        console.log("dashboard.jsx")
         const response = await axiosInstance.get('/dashboard/stats');
+        console.log("dashboard.jsx - 28", response.data)
         const { stats, recentPatients, recentAppointments } = response.data.data;
-        
+
         setStats(stats);
-        
+
         // Combine and format recent activity
         const activities = [
           ...recentPatients.map(p => ({ ...p, type: 'patient' })),
           ...recentAppointments.map(a => ({ ...a, type: 'appointment' }))
         ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-         .slice(0, 10); // Limit to 10 most recent
-        
+          .slice(0, 10); // Limit to 10 most recent
+
         setRecentActivity(activities);
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -85,44 +87,44 @@ const Dashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Patients" 
-          value={stats.totalPatients} 
-          icon={Users} 
-          color="text-blue-600" 
-          bgColor="bg-blue-50" 
+        <StatCard
+          title="Total Patients"
+          value={stats.totalPatients}
+          icon={Users}
+          color="text-blue-600"
+          bgColor="bg-blue-50"
         />
-        <StatCard 
-          title="Doctors Available" 
-          value={stats.totalDoctors} 
-          icon={Activity} 
-          color="text-green-600" 
-          bgColor="bg-green-50" 
+        <StatCard
+          title="Doctors Available"
+          value={stats.totalDoctors}
+          icon={Activity}
+          color="text-green-600"
+          bgColor="bg-green-50"
         />
-        <StatCard 
-          title="Total Appointments" 
-          value={stats.totalAppointments} 
-          icon={FileText} 
-          color="text-purple-600" 
-          bgColor="bg-purple-50" 
+        <StatCard
+          title="Total Appointments"
+          value={stats.totalAppointments}
+          icon={FileText}
+          color="text-purple-600"
+          bgColor="bg-purple-50"
         />
-        <StatCard 
-          title="Pending Visits" 
-          value={stats.pendingAppointments} 
-          icon={Calendar} 
-          color="text-orange-600" 
-          bgColor="bg-orange-50" 
+        <StatCard
+          title="Pending Visits"
+          value={stats.pendingAppointments}
+          icon={Calendar}
+          color="text-orange-600"
+          bgColor="bg-orange-50"
         />
       </div>
 
-       {/* Chart & Activity Section */}
-       <div className="flex flex-col lg:flex-row gap-6 lg:gap-6">
-          <div className="flex-1 lg:flex-none lg:w-2/3 h-[400px] lg:h-[450px]"> {/* Responsive Height Container */}
-              <DashboardChart />
-          </div>
-          <div className="flex-1 lg:flex-none lg:w-1/3 h-[400px] lg:h-[450px]"> {/* Same Responsive Height Container */}
-              <RecentActivity activities={recentActivity} />
-          </div>
+      {/* Chart & Activity Section */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-6">
+        <div className="flex-1 lg:flex-none lg:w-2/3 h-[400px] lg:h-[450px]"> {/* Responsive Height Container */}
+          <DashboardChart />
+        </div>
+        <div className="flex-1 lg:flex-none lg:w-1/3 h-[400px] lg:h-[450px]"> {/* Same Responsive Height Container */}
+          <RecentActivity activities={recentActivity} />
+        </div>
       </div>
 
       {/* Recent Activity / Placeholder Area */}

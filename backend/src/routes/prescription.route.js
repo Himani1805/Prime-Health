@@ -12,7 +12,7 @@ prescriptionRouter.use(protect);
 // Allowed for Doctors, Nurses, Receptionists, and Admins
 prescriptionRouter.get(
   '/', 
-  authorize('DOCTOR', 'HOSPITAL_ADMIN', 'NURSE', 'RECEPTIONIST'), 
+  authorize('SUPER_ADMIN', 'DOCTOR', 'HOSPITAL_ADMIN', 'NURSE', 'RECEPTIONIST'), 
   getPrescriptions
 );
 
@@ -20,7 +20,7 @@ prescriptionRouter.get(
 // Only Doctors (and Admins for management) can write prescriptions
 prescriptionRouter.post(
   '/', 
-  authorize('DOCTOR', 'HOSPITAL_ADMIN'), 
+  authorize('SUPER_ADMIN','DOCTOR', 'HOSPITAL_ADMIN'), 
   createPrescription
 );
 
@@ -28,7 +28,7 @@ prescriptionRouter.post(
 // Allowed for Doctors, Nurses, and Admins
 prescriptionRouter.get(
   '/:id/download',
-  authorize('DOCTOR', 'HOSPITAL_ADMIN', 'NURSE'),
+  authorize('SUPER_ADMIN','DOCTOR', 'HOSPITAL_ADMIN', 'NURSE'),
   downloadPrescription
 );
 

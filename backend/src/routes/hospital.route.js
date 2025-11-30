@@ -10,7 +10,7 @@ hospitalRouter.post("/register", registerHospital);
 hospitalRouter.get(
   "/:id",
   protect,
-  authorize("HOSPITAL_ADMIN", "ADMIN"),
+  authorize("HOSPITAL_ADMIN", 'SUPER_ADMIN'),
   (req, res) => {
     // Get hospital details
   }
