@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux'; 
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../redux/slices/authSlice'; 
+import { loginUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import { Lock, Mail, Loader2, Activity } from 'lucide-react';
 
@@ -91,6 +91,11 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              <div className="flex justify-end mt-1">
+                <Link to="/forgot-password" className="text-sm text-teal-600 hover:text-teal-500">
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -111,12 +116,7 @@ const Login = () => {
             </button>
           </form>
 
-          {/* <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              Protected by Prime Health Security.
-            </p>
-          </div> */}
-                    <div className="mt-6 text-center border-t border-gray-100 pt-4">
+          <div className="mt-6 text-center border-t border-gray-100 pt-4">
             <p className="text-sm text-gray-600">
               New Hospital?{' '}
               {/* LINK TO REGISTRATION */}

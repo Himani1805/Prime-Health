@@ -25,7 +25,6 @@ const DashboardChart = () => {
         setGrowthRate(growthRate);
       } catch (error) {
         console.error('Failed to fetch chart data:', error);
-        // Fallback to dummy data if API fails
         setData([
           { name: 'Jan', patients: 65, appointments: 40 },
           { name: 'Feb', patients: 59, appointments: 45 },
@@ -54,9 +53,8 @@ const DashboardChart = () => {
   }
 
   return (
-    <div className="h-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="h-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+      <div className="flex items-center justify-between mb-6 shrink-0">
         <div>
           <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-teal-600" />
@@ -64,15 +62,13 @@ const DashboardChart = () => {
           </h3>
           <p className="text-sm text-gray-500 mt-1">Patient visits vs. Appointments (Last 6 Months)</p>
         </div>
-        <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-          growthRate >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-        }`}>
+        <span className={`text-xs font-medium px-3 py-1 rounded-full ${growthRate >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}>
           {growthRate >= 0 ? '+' : ''}{growthRate}% vs last month
         </span>
       </div>
 
-      {/* Chart Container */}
-      <div className="h-[300px] w-full">
+      <div className="flex-1 w-full min-h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
@@ -89,19 +85,19 @@ const DashboardChart = () => {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 12, fill: '#6b7280' }} 
+            <XAxis
+              dataKey="name"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 12, fill: '#6b7280' }}
               dy={10}
             />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 12, fill: '#6b7280' }} 
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 12, fill: '#6b7280' }}
             />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
             />
             <Area

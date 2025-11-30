@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const compression = require('compression');
 const winston = require('winston'); // Basic logger setup
 const { connectGlobalDB } = require('./src/config/db.js');
 const tenantMiddleware = require('./src/middlewares/tenant.middleware.js');
@@ -33,6 +34,7 @@ const PORT = process.env.PORT || 3000;
 // 2. Essential Middleware
 // Security headers
 app.use(helmet()); 
+app.use(compression()); // Compress all responses 
 
 // Cross-Origin Resource Sharing
 app.use(cors({
@@ -71,6 +73,7 @@ app.use('/api/patients', patientRouter);
 app.use('/api/prescriptions', prescriptionRouter);
 app.use('/api/appointments', appointmentRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/prescription-templates', require('./src/routes/prescriptionTemplate.route.js'));
 
 
 // Global Error Handler (MUST be the last middleware)

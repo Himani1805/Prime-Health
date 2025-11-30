@@ -38,6 +38,13 @@ const patientSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User', // Reference to the User model (Doctor)
     },
+    department: {
+      type: String,
+      index: true,
+    },
+    profilePicture: {
+      type: String,
+    },
     tenantId: {
       type: String,
       required: true,

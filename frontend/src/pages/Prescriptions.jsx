@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosConfig';
 import { toast } from 'react-toastify';
 import CreatePrescriptionModal from '../components/CreatePrescriptionModal';
-import { 
-  FileText, 
-  Plus, 
-  Loader2, 
-  Download, 
+import {
+  FileText,
+  Plus,
+  Loader2,
+  Download,
   Calendar,
-  User 
+  User
 } from 'lucide-react';
 
 const Prescriptions = () => {
@@ -48,11 +48,11 @@ const Prescriptions = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      
+
       // 3. Set filename (clean spaces)
       const filename = `Prescription_${patientName.replace(/\s+/g, '_')}.pdf`;
       link.setAttribute('download', filename);
-      
+
       // 4. Trigger click & cleanup
       document.body.appendChild(link);
       link.click();
@@ -76,7 +76,7 @@ const Prescriptions = () => {
           <h2 className="text-2xl font-bold text-gray-800">Prescriptions</h2>
           <p className="text-gray-500 text-sm">Issue and manage patient medications</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
         >
@@ -137,9 +137,8 @@ const Prescriptions = () => {
                       <button
                         onClick={() => handleDownload(rx._id, rx.patient?.name || 'Patient')}
                         disabled={downloadingId === rx._id}
-                        className={`text-teal-600 hover:text-teal-800 font-medium inline-flex items-center gap-1 transition ${
-                          downloadingId === rx._id ? 'opacity-50 cursor-wait' : ''
-                        }`}
+                        className={`text-teal-600 hover:text-teal-800 font-medium inline-flex items-center gap-1 transition ${downloadingId === rx._id ? 'opacity-50 cursor-wait' : ''
+                          }`}
                       >
                         {downloadingId === rx._id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -158,14 +157,16 @@ const Prescriptions = () => {
       </div>
 
       {/* Modal */}
-      <CreatePrescriptionModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => {
-          fetchPrescriptions();
-          setIsModalOpen(false);
-        }}
-      />
+      {isModalOpen && (
+        <CreatePrescriptionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            fetchPrescriptions();
+            setIsModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

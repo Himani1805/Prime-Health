@@ -30,18 +30,29 @@ const upload = multer({
 });
 
 // 4. Custom upload function to Cloudinary
-const uploadToCloudinary = async (file) => {
-  try {
-    const result = await cloudinary.uploader.upload(file.buffer, {
-      folder: 'hms-users',
-      format: file.mimetype.split('/')[1] || 'jpg',
-      public_id: file.originalname.split('.')[0] + '-' + Date.now(),
-      transformation: [{ width: 500, height: 500, crop: 'limit' }],
-    });
-    return result;
-  } catch (error) {
-    throw error;
-  }
+const uploadToCloudinary = (file) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'hms-users',
+        format: file.mimetype.split('/')[1] || 'jpg',
+        public_id: file.originalname.split('.')[0] + '-' + Date.now(),
+        transformation: [{ width: 500, height: 500, crop: 'limit' }],
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    // Write buffer to stream
+    const Readable = require('stream').Readable;
+    const readableStream = new Readable();
+    readableStream._read = () => {}; // _read is required but you can no-op it
+    readableStream.push(file.buffer);
+    readableStream.push(null);
+    readableStream.pipe(uploadStream);
+  });
 };
 
 module.exports = { upload, uploadToCloudinary };

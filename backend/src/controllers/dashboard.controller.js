@@ -3,10 +3,7 @@ const User = require('../models/user.model.js');
 const Appointment = require('../models/appointment.model.js');
 
 exports.getDashboardStats = async (req, res, next) => {
-  console.log("db0")
   try {
-    console.log("db1")
-    // 1. Determine Models (Multi-Tenancy)
     const TenantPatient = req.tenantDB
       ? req.tenantDB.model('Patient', Patient.schema)
       : Patient;
@@ -15,38 +12,52 @@ exports.getDashboardStats = async (req, res, next) => {
       ? req.tenantDB.model('Appointment', Appointment.schema)
       : Appointment;
 
-    // 2. Execute Stats Queries
+    let patientFilter = req.tenantDB ? {} : { tenantId: req.user.tenantId };
+    let appointmentFilter = req.tenantDB ? {} : { tenantId: req.user.tenantId };
+    let pendingFilter = req.tenantDB 
+        ? { status: 'Scheduled' } 
+        : { tenantId: req.user.tenantId, status: 'Scheduled' };
+
+    if (req.user.role === 'DOCTOR') {
+        patientFilter = { 
+            ...patientFilter, 
+            assignedDoctor: req.user._id 
+        };
+        
+        appointmentFilter = { 
+            ...appointmentFilter, 
+            doctor: req.user._id 
+        };
+        
+        pendingFilter = { 
+            ...pendingFilter, 
+            doctor: req.user._id 
+        };
+    }
+
     const [
       totalPatients,
       totalDoctors,
       totalAppointments,
       pendingAppointments
     ] = await Promise.all([
-      TenantPatient.countDocuments(req.tenantDB ? {} : { tenantId: req.user.tenantId }),
+      TenantPatient.countDocuments(patientFilter),
       User.countDocuments({ tenantId: req.user.tenantId, role: 'DOCTOR' }),
-      TenantAppointment.countDocuments(req.tenantDB ? {} : { tenantId: req.user.tenantId }),
-      TenantAppointment.countDocuments(
-        req.tenantDB ? { status: 'Scheduled' } : { tenantId: req.user.tenantId, status: 'Scheduled' }
-      )
+      TenantAppointment.countDocuments(appointmentFilter),
+      TenantAppointment.countDocuments(pendingFilter)
     ]);
-    console.log("db2")
-    // 3. Fetch Recent Activity Data
-    const recentPatients = await TenantPatient.find(
-      req.tenantDB ? {} : { tenantId: req.user.tenantId }
-    )
+
+    const recentPatients = await TenantPatient.find(patientFilter)
       .sort({ createdAt: -1 })
       .limit(5)
       .lean();
 
-    let recentAppointments = await TenantAppointment.find(
-      req.tenantDB ? {} : { tenantId: req.user.tenantId }
-    )
+    let recentAppointments = await TenantAppointment.find(appointmentFilter)
       .sort({ createdAt: -1 })
       .limit(5)
       .populate('patient', 'name')
       .lean();
 
-    // 4. Manual Population for Doctors (Global DB -> Tenant DB)
     const doctorIds = Array.from(new Set(recentAppointments.map(function (app) {
       return app.doctor ? app.doctor.toString() : null;
     })));
@@ -64,8 +75,7 @@ exports.getDashboardStats = async (req, res, next) => {
         return Object.assign({}, app, { doctor: doctorInfo });
       });
     }
-    console.log("db3")
-    // 5. Response
+
     res.status(200).json({
       success: true,
       data: {
@@ -87,7 +97,6 @@ exports.getDashboardStats = async (req, res, next) => {
 
 exports.getChartData = async (req, res, next) => {
   try {
-    // 1. Determine Models (Multi-Tenancy)
     const TenantPatient = req.tenantDB
       ? req.tenantDB.model('Patient', Patient.schema)
       : Patient;
@@ -96,11 +105,9 @@ exports.getChartData = async (req, res, next) => {
       ? req.tenantDB.model('Appointment', Appointment.schema)
       : Appointment;
 
-    // 2. Get last 6 months data
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    // 3. Aggregate patients by month
     const patientStats = await TenantPatient.aggregate([
       {
         $match: {
@@ -120,7 +127,6 @@ exports.getChartData = async (req, res, next) => {
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
 
-    // 4. Aggregate appointments by month
     const appointmentStats = await TenantAppointment.aggregate([
       {
         $match: {
@@ -140,11 +146,9 @@ exports.getChartData = async (req, res, next) => {
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
 
-    // 5. Format data for chart
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const chartData = [];
 
-    // Generate last 6 months
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
@@ -168,7 +172,6 @@ exports.getChartData = async (req, res, next) => {
       });
     }
 
-    // 6. Calculate growth percentage
     const currentMonth = chartData[chartData.length - 1];
     const previousMonth = chartData[chartData.length - 2];
     const growthRate = previousMonth ?

@@ -1,4 +1,5 @@
 const Patient = require('../models/patient.model.js');
+const { uploadToCloudinary } = require('../config/cloudinary.js');
 
 /**
  * @desc    Register a new Patient (Tenant Specific)
@@ -17,6 +18,7 @@ exports.registerPatient = async (req, res, next) => {
       emergencyContact,
       patientType,
       assignedDoctor,
+      department,
     } = req.body;
 
     // 1. Basic Validation
@@ -26,15 +28,30 @@ exports.registerPatient = async (req, res, next) => {
       throw error;
     }
 
-    // 2. Generate Custom Patient ID
+    // 2. Handle File Upload (Profile Picture)
+    let profilePicture = '';
+    if (req.file) {
+      try {
+        const uploadResult = await uploadToCloudinary(req.file);
+        profilePicture = uploadResult.secure_url;
+      } catch (uploadError) {
+        console.error('Image Upload Failed:', uploadError);
+        // We can choose to fail or continue without image. Let's fail for now if upload fails.
+        const error = new Error('Image upload failed');
+        error.statusCode = 500;
+        throw error;
+      }
+    }
+
+    // 3. Generate Custom Patient ID
     // Format: P-<Timestamp>-<Random3Digits> to ensure uniqueness
     const patientId = `P-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    // 3. Multi-Tenancy: Get Model on Tenant Connection
+    // 4. Multi-Tenancy: Get Model on Tenant Connection
     // CRITICAL: We bind the schema to the specific req.tenantDB connection
     const TenantPatient = req.tenantDB.model('Patient', Patient.schema);
 
-    // 4. Create Patient in Tenant DB
+    // 5. Create Patient in Tenant DB
     const patient = await TenantPatient.create({
       name,
       dateOfBirth,
@@ -45,6 +62,8 @@ exports.registerPatient = async (req, res, next) => {
       emergencyContact,
       patientType,
       assignedDoctor,
+      department,
+      profilePicture,
       tenantId: req.user.tenantId, // Link to current tenant
       patientId,
     });
@@ -73,7 +92,20 @@ exports.getPatients = async (req, res, next) => {
     // 1. Base Query: STRICTLY enforce Tenant Isolation
     let query = { tenantId: req.user.tenantId };
 
-    // 2. Search Logic (Name, Phone, or Patient ID)
+    // 2. ABAC: Attribute-Based Access Control
+    // "A doctor can only view patients assigned to their department."
+    if (req.user.role === 'DOCTOR') {
+        if (req.user.department) {
+            query.department = req.user.department;
+        } else {
+            // If doctor has no department, maybe they can only see patients assigned to them specifically?
+            // Or fallback to empty result?
+            // Let's assume they can see patients assigned to them if no department is set.
+            query.assignedDoctor = req.user._id;
+        }
+    }
+
+    // 3. Search Logic (Name, Phone, or Patient ID)
     if (search) {
       const searchRegex = new RegExp(search, 'i'); // Case-insensitive
       query.$or = [
@@ -83,12 +115,12 @@ exports.getPatients = async (req, res, next) => {
       ];
     }
 
-    // 3. Filter Logic (e.g., ?patientType=IPD)
+    // 4. Filter Logic (e.g., ?patientType=IPD)
     if (patientType) {
       query.patientType = patientType;
     }
 
-    // 4. Multi-Tenancy: Execute Query on Tenant DB
+    // 5. Multi-Tenancy: Execute Query on Tenant DB
     const TenantPatient = req.tenantDB.model('Patient', Patient.schema);
     
     // Sort by newest first

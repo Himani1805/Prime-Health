@@ -14,6 +14,7 @@ userRouter.use(protect);
 userRouter.post(
   '/',
   authorize('HOSPITAL_ADMIN', 'SUPER_ADMIN'),
+  upload.single('profilePicture'),
   createUser
 );
 

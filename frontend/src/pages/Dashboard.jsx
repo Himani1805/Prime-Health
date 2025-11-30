@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import axiosInstance from '../api/axiosConfig';
 import DashboardChart from '../components/DashboardChart';
 import { toast } from 'react-toastify';
@@ -12,6 +13,7 @@ import {
 import RecentActivity from '../components/RecentActivity';
 
 const Dashboard = () => {
+  const { user } = useSelector((state) => state.auth);
   const [stats, setStats] = useState({
     totalPatients: 0,
     totalDoctors: 0,
@@ -24,19 +26,16 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        console.log("dashboard.jsx")
         const response = await axiosInstance.get('/dashboard/stats');
-        console.log("dashboard.jsx - 28", response.data)
         const { stats, recentPatients, recentAppointments } = response.data.data;
 
         setStats(stats);
 
-        // Combine and format recent activity
         const activities = [
           ...recentPatients.map(p => ({ ...p, type: 'patient' })),
           ...recentAppointments.map(a => ({ ...a, type: 'appointment' }))
         ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 10); // Limit to 10 most recent
+          .slice(0, 10);
 
         setRecentActivity(activities);
       } catch (error) {
@@ -58,7 +57,6 @@ const Dashboard = () => {
     );
   }
 
-  // Card Component for consistency
   const StatCard = ({ title, value, icon: Icon, color, bgColor }) => (
     <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:shadow-md">
       <div>
@@ -71,24 +69,27 @@ const Dashboard = () => {
     </div>
   );
 
+  const isDoctor = user?.role === 'DOCTOR';
+
   return (
     <div className="space-y-8">
-      {/* Welcome Section */}
       <div className="bg-teal-600 text-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden">
         <div className="relative z-10">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2">Dashboard Overview</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2">
+            {isDoctor ? `Welcome back, Dr. ${user?.lastName}` : 'Dashboard Overview'}
+          </h1>
           <p className="text-sm md:text-base text-teal-100">
-            Welcome back! Here's what's happening in your hospital today.
+            {isDoctor
+              ? "Here's your schedule and patient activity for today."
+              : "Welcome back! Here's what's happening in your hospital today."}
           </p>
         </div>
-        {/* Decorative Background Element */}
         <div className="absolute right-0 top-0 h-full w-1/3 bg-white opacity-10 transform skew-x-12 hidden md:block"></div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Patients"
+          title={isDoctor ? "My Patients" : "Total Patients"}
           value={stats.totalPatients}
           icon={Users}
           color="text-blue-600"
@@ -102,14 +103,14 @@ const Dashboard = () => {
           bgColor="bg-green-50"
         />
         <StatCard
-          title="Total Appointments"
+          title={isDoctor ? "My Appointments" : "Total Appointments"}
           value={stats.totalAppointments}
           icon={FileText}
           color="text-purple-600"
           bgColor="bg-purple-50"
         />
         <StatCard
-          title="Pending Visits"
+          title={isDoctor ? "My Upcoming Visits" : "Pending Visits"}
           value={stats.pendingAppointments}
           icon={Calendar}
           color="text-orange-600"
@@ -117,17 +118,14 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Chart & Activity Section */}
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-6">
-        <div className="flex-1 lg:flex-none lg:w-2/3 h-[400px] lg:h-[450px]"> {/* Responsive Height Container */}
+        <div className="flex-1 lg:flex-none lg:w-2/3 h-[400px] lg:h-[450px]">
           <DashboardChart />
         </div>
-        <div className="flex-1 lg:flex-none lg:w-1/3 h-[400px] lg:h-[450px]"> {/* Same Responsive Height Container */}
+        <div className="flex-1 lg:flex-none lg:w-1/3 h-[400px] lg:h-[450px]">
           <RecentActivity activities={recentActivity} />
         </div>
       </div>
-
-      {/* Recent Activity / Placeholder Area */}
     </div>
   );
 };

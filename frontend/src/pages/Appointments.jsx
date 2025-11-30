@@ -27,6 +27,17 @@ const Appointments = () => {
     fetchAppointments();
   }, []);
 
+  const handleStatusUpdate = async (id, status) => {
+    if (!window.confirm(`Are you sure you want to mark this appointment as ${status}?`)) return;
+    try {
+      await axiosInstance.put(`/appointments/${id}/status`, { status });
+      toast.success(`Appointment marked as ${status}`);
+      fetchAppointments();
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -35,7 +46,7 @@ const Appointments = () => {
           <h2 className="text-2xl font-bold text-gray-800">Appointments</h2>
           <p className="text-gray-500 text-sm">Manage patient visits and doctor schedules</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
         >
@@ -108,15 +119,35 @@ const Appointments = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full items-center gap-1 ${
-                        appt.status === 'Scheduled' ? 'bg-green-100 text-green-800' :
-                        appt.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {appt.status === 'Scheduled' && <CheckCircle className="h-3 w-3" />}
-                        {appt.status === 'Cancelled' && <XCircle className="h-3 w-3" />}
-                        {appt.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full items-center gap-1 ${appt.status === 'Scheduled' ? 'bg-green-100 text-green-800' :
+                          appt.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                          {appt.status === 'Scheduled' && <CheckCircle className="h-3 w-3" />}
+                          {appt.status === 'Cancelled' && <XCircle className="h-3 w-3" />}
+                          {appt.status}
+                        </span>
+
+                        {appt.status === 'Scheduled' && (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleStatusUpdate(appt._id, 'Completed')}
+                              className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 border border-blue-200"
+                              title="Mark as Completed"
+                            >
+                              Complete
+                            </button>
+                            <button
+                              onClick={() => handleStatusUpdate(appt._id, 'Cancelled')}
+                              className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 border border-red-200"
+                              title="Cancel Appointment"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -127,14 +158,16 @@ const Appointments = () => {
       </div>
 
       {/* Modal */}
-      <BookAppointmentModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => {
-          fetchAppointments();
-          setIsModalOpen(false);
-        }}
-      />
+      {isModalOpen && (
+        <BookAppointmentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            fetchAppointments();
+            setIsModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

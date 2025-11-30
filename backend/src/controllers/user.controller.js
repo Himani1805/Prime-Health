@@ -2,11 +2,6 @@ const User = require('../models/user.model.js');
 const sendEmail = require('../utils/sendEmail');
 const { uploadToCloudinary } = require('../config/cloudinary.js');
 
-/**
- * @desc    Create a new User (Staff)
- * @route   POST /api/users
- * @access  Private (Hospital Admin Only)
- */
 exports.createUser = async (req, res, next) => {
   try {
     const { firstName, lastName, email, role, department } = req.body;
@@ -24,6 +19,19 @@ exports.createUser = async (req, res, next) => {
       throw error;
     }
 
+    let profilePictureUrl = '';
+    if (req.file) {
+      try {
+        const result = await uploadToCloudinary(req.file);
+        profilePictureUrl = result.secure_url;
+      } catch (uploadError) {
+        console.error('Cloudinary upload failed:', uploadError);
+        // Continue creating user without profile picture, or throw error?
+        // Let's log it and continue, or maybe throw. 
+        // For now, let's just log and proceed.
+      }
+    }
+
     const tempPassword = Math.random().toString(36).slice(-8) + "Aa1@";
 
     const user = await User.create({
@@ -34,10 +42,10 @@ exports.createUser = async (req, res, next) => {
       role,
       tenantId: req.user.tenantId,
       status: 'ACTIVE',
+      profilePicture: profilePictureUrl,
       ...(department && { department }),
     });
 
-    // SEND EMAIL TO NEW STAFF
     const message = `
       Hello ${firstName},
       
@@ -73,8 +81,9 @@ exports.createUser = async (req, res, next) => {
         email: user.email,
         role: user.role,
         tenantId: user.tenantId,
+        tempPassword: tempPassword,
+        profilePicture: user.profilePicture
       },
-      // Password removed from response
     });
 
   } catch (error) {
@@ -82,27 +91,17 @@ exports.createUser = async (req, res, next) => {
   }
 };
 
-
-/**
- * @desc    Update User Profile Picture
- * @route   PUT /api/users/:id/photo
- * @access  Private
- */
 exports.updateProfilePicture = async (req, res, next) => {
   try {
-    // 1. Check if file was uploaded
-    // Multer places the file info in req.file (in memory buffer)
     if (!req.file) {
       const error = new Error('Please upload a file');
       error.statusCode = 400;
       throw error;
     }
 
-    // 2. Upload to Cloudinary
     const result = await uploadToCloudinary(req.file);
     const imageUrl = result.secure_url;
 
-    // 3. Update User Record in DB
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { profilePicture: imageUrl },
@@ -130,19 +129,16 @@ exports.updateProfilePicture = async (req, res, next) => {
   }
 };
 
-// Get All Users (Doctors/Staff)
 exports.getUsers = async (req, res, next) => {
   try {
     const { role } = req.query;
-    // Query build karo: Tenant ID zaroori hai
     const query = { tenantId: req.user.tenantId };
     
-    // Agar frontend se ?role=DOCTOR aaya hai, to filter add karo
     if (role) {
       query.role = role;
     }
 
-    const users = await User.find(query).select('-password'); // Password mat bhejna
+    const users = await User.find(query).select('-password');
     res.status(200).json({ success: true, data: users });
   } catch (error) {
     next(error);

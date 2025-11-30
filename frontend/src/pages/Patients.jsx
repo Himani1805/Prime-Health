@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-// Ensure src/api/axiosConfig.js exists for this import to work
-import axiosInstance from '../api/axiosConfig'; 
+import axiosInstance from '../api/axiosConfig';
 import { toast } from 'react-toastify';
 import AddPatientModal from '../components/AddPatientModal';
-import { 
-  Search, 
-  Plus, 
-  User, 
-  Loader2, 
-  Calendar, 
-  Phone 
+import {
+  Search,
+  Plus,
+  User,
+  Loader2,
+  Calendar,
+  Phone
 } from 'lucide-react';
 
 const Patients = () => {
@@ -18,7 +17,6 @@ const Patients = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Helper: Calculate Age
   const calculateAge = (dob) => {
     if (!dob) return 'N/A';
     const birthDate = new Date(dob);
@@ -27,15 +25,12 @@ const Patients = () => {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
-  // Fetch Patients Logic
   const fetchPatients = async (search = '') => {
     setLoading(true);
     try {
-      // Backend call to get patients
       const response = await axiosInstance.get(`/patients?search=${search}`);
       setPatients(response.data.data);
     } catch (error) {
-      // Error handling
       const msg = error.response?.data?.message || 'Failed to fetch patients';
       toast.error(msg);
       console.error(error);
@@ -44,7 +39,6 @@ const Patients = () => {
     }
   };
 
-  // Debounce Search Effect
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchPatients(searchTerm);
@@ -55,14 +49,13 @@ const Patients = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Patient Management</h2>
           <p className="text-gray-500 text-sm">View and manage registered patients</p>
         </div>
-        
-        <button 
+
+        <button
           className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
           onClick={() => setIsModalOpen(true)}
         >
@@ -71,7 +64,6 @@ const Patients = () => {
         </button>
       </div>
 
-      {/* Search Bar */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="relative max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -87,18 +79,18 @@ const Patients = () => {
         </div>
       </div>
 
-      {/* Data Table */}
+      {/* Data Table with Horizontal Scroll */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Info</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age / Gender</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tenant ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Patient Info</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Age / Gender</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tenant ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Date Added</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -142,11 +134,10 @@ const Patients = () => {
                       <div className="text-xs text-gray-500 capitalize">{patient.gender}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        patient.patientType === 'IPD' 
-                          ? 'bg-purple-100 text-purple-800' 
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${patient.patientType === 'IPD'
+                          ? 'bg-purple-100 text-purple-800'
                           : 'bg-green-100 text-green-800'
-                      }`}>
+                        }`}>
                         {patient.patientType}
                       </span>
                     </td>
@@ -169,12 +160,11 @@ const Patients = () => {
         </div>
       </div>
 
-      {/* Add Patient Modal */}
-      <AddPatientModal 
+      <AddPatientModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => {
-          fetchPatients(); 
+          fetchPatients();
           setIsModalOpen(false);
         }}
       />

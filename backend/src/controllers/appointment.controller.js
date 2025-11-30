@@ -148,3 +148,45 @@ exports.getAppointments = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Update Appointment Status (Cancel/Complete)
+ * @route   PUT /api/appointments/:id/status
+ * @access  Private (Doctor, Admin, Receptionist)
+ */
+exports.updateAppointmentStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    if (!['Scheduled', 'Completed', 'Cancelled'].includes(status)) {
+      const error = new Error('Invalid status');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const TenantAppointment = req.tenantDB 
+        ? req.tenantDB.model('Appointment', Appointment.schema) 
+        : Appointment;
+
+    const appointment = await TenantAppointment.findOne({ _id: id, tenantId: req.user.tenantId });
+
+    if (!appointment) {
+      const error = new Error('Appointment not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    appointment.status = status;
+    await appointment.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Appointment marked as ${status}`,
+      data: appointment,
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};

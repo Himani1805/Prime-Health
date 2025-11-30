@@ -2,6 +2,7 @@ const express = require('express');
 const patientRouter = express.Router();
 const { registerPatient, getPatients } = require('../controllers/patient.controller.js');
 const { protect, authorize } = require('../middlewares/auth.middleware.js');
+const { upload } = require('../config/cloudinary.js');
 
 // Base Route: /api/patients
 
@@ -21,6 +22,7 @@ patientRouter.get(
 patientRouter.post(
   '/register',
   authorize('SUPER_ADMIN','HOSPITAL_ADMIN', 'RECEPTIONIST', 'DOCTOR'),
+  upload.single('profilePicture'),
   registerPatient
 );
 

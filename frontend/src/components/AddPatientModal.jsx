@@ -1,32 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios'; // Changed: Import axios directly
 import api from '../api/axiosConfig';
 import { toast } from 'react-toastify';
-import { X, Loader2, User, Phone, Calendar, Activity } from 'lucide-react';
-
-// --- LOCAL AXIOS CONFIGURATION (Fix for missing file) ---
-const axiosInstance = axios.create({
-  baseURL: 'http://localhost:3000/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add Interceptor to attach token
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-// -------------------------------------------------------
+import { X, Loader2, User, Phone } from 'lucide-react';
 
 const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
-  // Don't render if not open
   if (!isOpen) return null;
 
   const [formData, setFormData] = useState({
@@ -35,13 +12,18 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
     gender: 'Male',
     contactNumber: '',
     patientType: 'OPD',
-    address: '', // Optional
-    bloodGroup: '' // Optional
+    address: '',
+    bloodGroup: '',
   });
+  const [profilePicture, setProfilePicture] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    setProfilePicture(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -49,13 +31,22 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
-      // API Call using the local instance
-      // await axiosInstance.post('/patients/register', formData);
-      await api.post('/patients/register', formData);
+      const data = new FormData();
+      Object.keys(formData).forEach(key => {
+        data.append(key, formData[key]);
+      });
+      if (profilePicture) {
+        data.append('profilePicture', profilePicture);
+      }
+
+      await api.post('/patients/register', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       toast.success('Patient registered successfully!');
 
-      // Reset Form
       setFormData({
         name: '',
         dateOfBirth: '',
@@ -63,10 +54,10 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
         contactNumber: '',
         patientType: 'OPD',
         address: '',
-        bloodGroup: ''
+        bloodGroup: '',
       });
+      setProfilePicture(null);
 
-      // Notify parent & close
       onSuccess();
       onClose();
 
@@ -80,10 +71,8 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4 transition-opacity">
-      {/* Modal Card */}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg md:max-w-xl overflow-hidden transform transition-all scale-100 max-h-[90vh] flex flex-col">
 
-        {/* Header */}
         <div className="bg-teal-600 p-4 md:p-6 flex justify-between items-center text-white shrink-0">
           <h2 className="text-lg md:text-xl font-bold flex items-center gap-2">
             <User className="h-5 w-5" /> Register New Patient
@@ -96,11 +85,9 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
           </button>
         </div>
 
-        {/* Form Body */}
         <div className="p-4 md:p-6 space-y-4 overflow-y-auto flex-1">
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
               <input
@@ -115,7 +102,6 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Contact */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number *</label>
                 <div className="relative">
@@ -132,7 +118,6 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
                 </div>
               </div>
 
-              {/* DOB */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                 <input
@@ -146,7 +131,6 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Gender */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                 <select
@@ -161,7 +145,6 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
                 </select>
               </div>
 
-              {/* Patient Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <select
@@ -176,7 +159,17 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
             </div>
 
-            {/* Optional Address */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+              <input
+                type="file"
+                name="profilePicture"
+                accept="image/*"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                onChange={handleFileChange}
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
               <textarea
@@ -189,7 +182,6 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }) => {
               ></textarea>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
               <button
                 type="button"
