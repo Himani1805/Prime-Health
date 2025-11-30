@@ -1,7 +1,8 @@
 const express = require('express');
 const dashboardRouter = express.Router();
 const { getDashboardStats, getChartData } = require('../controllers/dashboard.controller.js');
-const { protect } = require('../middlewares/auth.middleware.js');
+const { protect, authorize } = require('../middlewares/auth.middleware.js');
+
 
 // Base: /api/dashboard
 
@@ -9,9 +10,9 @@ const { protect } = require('../middlewares/auth.middleware.js');
 dashboardRouter.use(protect);
 
 // GET /stats
-dashboardRouter.get('/stats', getDashboardStats);
+dashboardRouter.get('/stats', protect, authorize('HOSPITAL_ADMIN', 'DOCTOR', 'SUPER_ADMIN'), getDashboardStats);
 
 // GET /chart
-dashboardRouter.get('/chart', getChartData);
+dashboardRouter.get('/chart', protect, authorize('HOSPITAL_ADMIN', 'DOCTOR', 'SUPER_ADMIN'), getChartData);
 
 module.exports = dashboardRouter;
