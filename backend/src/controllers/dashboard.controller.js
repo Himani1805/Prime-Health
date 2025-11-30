@@ -45,7 +45,9 @@ exports.getDashboardStats = async (req, res, next) => {
     .lean();
 
     // 4. Manual Population for Doctors (Global DB -> Tenant DB)
-    const doctorIds = Array.from(new Set(recentAppointments.map(function(app) { 
+    const safeAppointments = Array.isArray(recentAppointments) ? recentAppointments : [];
+
+    const doctorIds = Array.from(new Set(safeAppointments.map(function(app) { 
         return app.doctor ? app.doctor.toString() : null; 
     })).filter(Boolean));
     
