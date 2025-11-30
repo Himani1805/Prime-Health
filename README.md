@@ -6,6 +6,10 @@
 
 > **Project Status: Complete (v1.0.0) | 🌐 [Live Demo](https://prime-health-one.vercel.app/)**
 
+> **Credentials**
+ SUPER_ADMIN - email: admin@citycare.com, password: Admin@123
+ HOSPITAL_ADMIN - hinu12@gmail.com, password: Admin@123
+
 Prime Health is a comprehensive, scalable Software as a Service (SaaS) platform built on the MERN stack. Its primary objective is to allow multiple hospitals (tenants) to manage their operations using a single system while guaranteeing **Strict Data Isolation** for every tenant.
 
 ---
