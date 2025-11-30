@@ -36,7 +36,7 @@ app.use(helmet());
 
 // Cross-Origin Resource Sharing
 app.use(cors({
-  origin: ['https://prime-health-one.vercel.app/','http://localhost:5173'],
+  origin: ['https://prime-health-one.vercel.app','http://localhost:5173'],
   credentials: true
 }));
 
