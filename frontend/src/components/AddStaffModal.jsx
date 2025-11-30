@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosConfig';
 import { toast } from 'react-toastify';
-import { X, Loader2, UserPlus, Mail, Phone, Briefcase, User, Camera } from 'lucide-react';
+import { X, Loader2, UserPlus, Mail, Phone, Briefcase, User, Camera, Edit } from 'lucide-react';
 
-const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
+const AddStaffModal = ({ isOpen, onClose, onSuccess, userToEdit = null }) => {
   if (!isOpen) return null;
 
   const [formData, setFormData] = useState({
@@ -16,8 +16,38 @@ const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
     gender: 'Male'
   });
   const [profilePicture, setProfilePicture] = useState(null);
+  const [existingProfilePicture, setExistingProfilePicture] = useState(null);
   const [loading, setLoading] = useState(false);
   const [createdUser, setCreatedUser] = useState(null);
+
+  useEffect(() => {
+    if (userToEdit) {
+      setFormData({
+        firstName: userToEdit.firstName || '',
+        lastName: userToEdit.lastName || '',
+        email: userToEdit.email || '',
+        phone: userToEdit.phone || '',
+        department: userToEdit.department || '',
+        role: userToEdit.role || 'DOCTOR',
+        gender: userToEdit.gender || 'Male'
+      });
+      setExistingProfilePicture(userToEdit.profilePicture);
+    } else {
+      // Reset form for new user
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        department: '',
+        role: 'DOCTOR',
+        gender: 'Male'
+      });
+      setExistingProfilePicture(null);
+    }
+    setProfilePicture(null);
+    setCreatedUser(null);
+  }, [userToEdit, isOpen]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,19 +70,27 @@ const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
         data.append('profilePicture', profilePicture);
       }
 
-      const response = await axiosInstance.post('/users', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      let response;
+      if (userToEdit) {
+        response = await axiosInstance.put(`/users/${userToEdit._id}`, data, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        toast.success('Staff member updated!');
+      } else {
+        response = await axiosInstance.post('/users', data, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setCreatedUser(response.data.data);
+        toast.success('Staff member added!');
+      }
 
-      setCreatedUser(response.data.data);
-
-      toast.success(`Staff member added!`);
       onSuccess();
+      if (userToEdit) {
+        onClose();
+      }
 
     } catch (error) {
-      const msg = error.response?.data?.message || 'Failed to add staff';
+      const msg = error.response?.data?.message || 'Failed to save staff';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -75,7 +113,8 @@ const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
 
         <div className="bg-teal-600 p-6 flex justify-between items-center text-white shrink-0">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <UserPlus className="h-5 w-5" /> {createdUser ? 'Staff Created' : 'Add New Staff'}
+            {userToEdit ? <Edit className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+            {userToEdit ? 'Edit Staff' : (createdUser ? 'Staff Created' : 'Add New Staff')}
           </h2>
           <button onClick={handleClose} className="text-teal-100 hover:text-white transition">
             <X className="h-6 w-6" />
@@ -83,7 +122,7 @@ const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         <div className="p-6 overflow-y-auto">
-          {createdUser ? (
+          {createdUser && !userToEdit ? (
             <div className="space-y-6 text-center">
               <div className="bg-green-50 text-green-800 p-4 rounded-lg border border-green-200">
                 <p className="font-medium text-lg">User Created Successfully!</p>
@@ -136,6 +175,12 @@ const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
                         alt="Preview"
                         className="w-full h-full object-cover"
                       />
+                    ) : existingProfilePicture ? (
+                      <img
+                        src={existingProfilePicture}
+                        alt="Current"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <Camera className="h-8 w-8 text-gray-400 group-hover:text-teal-500 transition" />
                     )}
@@ -148,7 +193,7 @@ const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
                     title="Upload Profile Picture"
                   />
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white px-2 py-0.5 rounded-full text-xs font-medium text-gray-500 shadow-sm border border-gray-100 whitespace-nowrap">
-                    {profilePicture ? 'Change Photo' : 'Upload Photo'}
+                    {profilePicture || existingProfilePicture ? 'Change Photo' : 'Upload Photo'}
                   </div>
                 </div>
               </div>
@@ -274,7 +319,7 @@ const AddStaffModal = ({ isOpen, onClose, onSuccess }) => {
                     }`}
                 >
                   {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
-                  {loading ? 'Creating User...' : 'Add Staff Member'}
+                  {loading ? (userToEdit ? 'Updating...' : 'Creating User...') : (userToEdit ? 'Update Staff' : 'Add Staff Member')}
                 </button>
               </div>
             </form>

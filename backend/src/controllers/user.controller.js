@@ -144,3 +144,43 @@ exports.getUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateUser = async (req, res, next) => {
+  try {
+    const { firstName, lastName, email, phone, department, role, gender } = req.body;
+    
+    let updateData = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      department,
+      role,
+      gender
+    };
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file);
+      updateData.profilePicture = result.secure_url;
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'User updated successfully',
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};

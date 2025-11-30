@@ -2,19 +2,20 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosConfig';
 import { toast } from 'react-toastify';
 import AddStaffModal from '../components/AddStaffModal';
-import { 
-  UserPlus, 
-  Search, 
-  Loader2, 
-  Mail, 
+import {
+  UserPlus,
+  Search,
+  Loader2,
+  Mail,
   CheckCircle,
-  Briefcase 
+  Briefcase
 } from 'lucide-react';
 
 const Staff = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchUsers = async () => {
@@ -36,8 +37,18 @@ const Staff = () => {
     fetchUsers();
   }, []);
 
+  const handleEdit = (user) => {
+    setUserToEdit(user);
+    setIsModalOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setUserToEdit(null);
+    setIsModalOpen(true);
+  };
+
   // Filter users based on search
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,7 +56,7 @@ const Staff = () => {
   );
 
   const getRoleColor = (role) => {
-    switch(role) {
+    switch (role) {
       case 'DOCTOR': return 'bg-blue-100 text-blue-800';
       case 'NURSE': return 'bg-pink-100 text-pink-800';
       case 'HOSPITAL_ADMIN': return 'bg-purple-100 text-purple-800';
@@ -61,8 +72,8 @@ const Staff = () => {
           <h2 className="text-2xl font-bold text-gray-800">Staff Management</h2>
           <p className="text-gray-500 text-sm">Manage doctors, nurses, and administrative staff</p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
+        <button
+          onClick={handleAddNew}
           className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
         >
           <UserPlus className="h-4 w-4" />
@@ -96,8 +107,16 @@ const Staff = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredUsers.map((user) => (
-            <div key={user._id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition p-6 flex flex-col items-center text-center">
-              
+            <div key={user._id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition p-6 flex flex-col items-center text-center relative group">
+
+              <button
+                onClick={() => handleEdit(user)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-full transition opacity-0 group-hover:opacity-100"
+                title="Edit Staff"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+              </button>
+
               {/* Avatar */}
               <div className="w-20 h-20 bg-gray-100 rounded-full mb-4 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center text-3xl font-bold text-gray-400">
                 {user.profilePicture ? (
@@ -111,7 +130,7 @@ const Staff = () => {
               <h3 className="text-lg font-bold text-gray-800">
                 {user.firstName} {user.lastName}
               </h3>
-              
+
               <span className={`px-3 py-1 rounded-full text-xs font-semibold mt-2 ${getRoleColor(user.role)}`}>
                 {user.role}
               </span>
@@ -142,10 +161,11 @@ const Staff = () => {
       )}
 
       {/* Modal */}
-      <AddStaffModal 
+      <AddStaffModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchUsers}
+        userToEdit={userToEdit}
       />
     </div>
   );

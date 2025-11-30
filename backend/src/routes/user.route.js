@@ -1,6 +1,6 @@
 const express = require('express');
 const userRouter = express.Router();
-const { createUser, updateProfilePicture, getUsers } = require('../controllers/user.controller.js');
+const { createUser, updateProfilePicture, getUsers, updateUser } = require('../controllers/user.controller.js');
 const { protect, authorize } = require('../middlewares/auth.middleware.js');
 const { upload } = require('../config/cloudinary.js');
 
@@ -24,6 +24,14 @@ userRouter.put(
   '/:id/photo',
   upload.single('photo'), // Middleware to handle file upload BEFORE controller
   updateProfilePicture
+);
+
+// PUT /:id - Update User Details
+userRouter.put(
+  '/:id',
+  authorize('HOSPITAL_ADMIN', 'SUPER_ADMIN'),
+  upload.single('profilePicture'),
+  updateUser
 );
 
 
