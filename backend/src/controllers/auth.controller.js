@@ -7,7 +7,6 @@ const generateToken = require('../utils/generateToken');
  * @access  Public
  */
 exports.loginUser = async (req, res, next) => {
-  // ... (Keep your existing loginUser logic exactly as is) ...
   try {
     const { email, password } = req.body;
 

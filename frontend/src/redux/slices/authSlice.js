@@ -21,7 +21,7 @@ export const loginUser = createAsyncThunk(
 );
 
 const initialState = {
-  user: null,
+  user: JSON.parse( localStorage.getItem('user')) || null,
   token: localStorage.getItem('token') || null, // Hydrate token from storage on load
   loading: false,
   error: null,
@@ -53,6 +53,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         // Save token to localStorage immediately
         localStorage.setItem('token', action.payload.token);
+        localStorage.setItem('user', JSON.stringify(action.payload?.user));
       })
       // Login Failure
       .addCase(loginUser.rejected, (state, action) => {
