@@ -45,19 +45,22 @@ exports.getDashboardStats = async (req, res, next) => {
     .lean();
 
     // 4. Manual Population for Doctors (Global DB -> Tenant DB)
-    const doctorIds = [...new Set(recentAppointments.map(app => app.doctor?.toString()))];
+    const doctorIds = Array.from(new Set(recentAppointments.map(function(app) { 
+        return app.doctor ? app.doctor.toString() : null; 
+    })).filter(Boolean));
     
     if (doctorIds.length > 0) {
         const doctors = await User.find({ _id: { $in: doctorIds } }, 'firstName lastName');
-        const doctorMap = doctors.reduce((acc, doc) => {
+        const doctorMap = doctors.reduce(function(acc, doc) {
             acc[doc._id.toString()] = doc;
             return acc;
         }, {});
 
-        recentAppointments = recentAppointments.map(app => ({
-            ...app,
-            doctor: doctorMap[app.doctor?.toString()] || { firstName: 'Unknown', lastName: 'Doctor' }
-        }));
+        recentAppointments = recentAppointments.map(function(app) {
+            const doctorId = app.doctor ? app.doctor.toString() : null;
+            const doctorInfo = doctorMap[doctorId] || { firstName: 'Unknown', lastName: 'Doctor' };
+            return Object.assign({}, app, { doctor: doctorInfo });
+        });
     }
 
     // 5. Response
@@ -148,13 +151,13 @@ exports.getChartData = async (req, res, next) => {
       
       const monthName = monthNames[month - 1];
       
-      const patientCount = patientStats.find(stat => 
-        stat._id.year === year && stat._id.month === month
-      )?.count || 0;
+      const patientCount = (patientStats.find(function(stat) { 
+        return stat._id.year === year && stat._id.month === month; 
+      }) || {}).count || 0;
       
-      const appointmentCount = appointmentStats.find(stat => 
-        stat._id.year === year && stat._id.month === month
-      )?.count || 0;
+      const appointmentCount = (appointmentStats.find(function(stat) { 
+        return stat._id.year === year && stat._id.month === month; 
+      }) || {}).count || 0;
 
       chartData.push({
         name: monthName,

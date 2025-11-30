@@ -116,7 +116,9 @@ exports.getAppointments = async (req, res, next) => {
 
     // 3. Manual Populate for Doctor (Global DB)
     // Extract unique doctor IDs
-    const doctorIds = [...new Set(appointments.map(app => app.doctor?.toString()))];
+    const doctorIds = Array.from(new Set(appointments.map(function(app) { 
+        return app.doctor ? app.doctor.toString() : null; 
+    })).filter(Boolean));
 
     if (doctorIds.length > 0) {
         // Fetch doctors from Global User Collection
@@ -129,10 +131,11 @@ exports.getAppointments = async (req, res, next) => {
         }, {});
 
         // Merge doctor info into appointments
-        appointments = appointments.map(app => ({
-            ...app,
-            doctor: doctorMap[app.doctor?.toString()] || { firstName: 'Unknown', lastName: 'Doctor' }
-        }));
+        appointments = appointments.map(app => {
+            const doctorId = app.doctor ? app.doctor.toString() : null;
+            const doctorInfo = doctorMap[doctorId] || { firstName: 'Unknown', lastName: 'Doctor' };
+            return Object.assign({}, app, { doctor: doctorInfo });
+        });
     }
 
     res.status(200).json({
