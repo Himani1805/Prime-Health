@@ -130,6 +130,7 @@ Open your browser at `http://localhost:5173`
 3. **Patients:** Add a new patient using the modal
 4. **Prescriptions:** Create prescription and test PDF download
 5. **Appointments:** Book appointments with conflict checking
+6. **Staff Mangement(Admin only):** Admin can manage staff like Add Doctors, Nurse, Receptionist etc
 
 ---
 
@@ -212,29 +213,12 @@ Prime-Health/
 
 ### Frontend (Vercel)
 1. Connect GitHub repository to Vercel
-2. Configure build settings: `npm run build`
-3. Set environment variables for API URL
+2. Configure build settings: `npm run dev`
 
 ### Backend (Render)
 1. Connect GitHub repository to Render
-2. Configure start command: `npm start`
+2. Configure start command: `npm run dev`
 3. Add all environment variables from `.env`
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -250,8 +234,5 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, please email at [your-email@example.com] or create an issue in the GitHub repository.
+For support, please email at [support@primehealth.com] or create an issue in the GitHub repository.
 
----
-
-> **Built with ❤️ for Healthcare Management**
