@@ -8,9 +8,10 @@
 
 > **Credentials**
 
- SUPER_ADMIN - email: admin@citycare.com, password: Admin@123
+ SUPER_ADMIN - email: hinusharma18@gmail.com, password: n6dan7fpAa1@
  
- HOSPITAL_ADMIN - hinu12@gmail.com, password: Admin@123
+ HOSPITAL_ADMIN - admin@max.com, password: Admin@123  
+ HOSPITAL_ADMIN - admin@greencity.com, password: Admin@123 
 
 Prime Health is a comprehensive, scalable Software as a Service (SaaS) platform built on the MERN stack. Its primary objective is to allow multiple hospitals (tenants) to manage their operations using a single system while guaranteeing **Strict Data Isolation** for every tenant.
 
